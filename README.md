@@ -16,9 +16,18 @@ Spring Boot backend for course offerings, sessions, and parent bookings across t
 - Spring Boot 4
 - Spring Web MVC
 - Spring Data JPA
-- PostgreSQL in production
 - YugabyteDB via PostgreSQL-compatible YSQL
+- PostgreSQL JDBC driver
 - H2 in local/test mode
+
+## Environment Variables
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `DB_URL` | `jdbc:postgresql://localhost:5433/yugabyte` | YugabyteDB/PostgreSQL JDBC URL |
+| `DB_USERNAME` | `yugabyte` | Database username |
+| `DB_PASSWORD` | `yugabyte` | Database password |
+| `DDL_AUTO` | `update` | Hibernate schema update mode |
 
 ## Run Locally
 
@@ -56,6 +65,14 @@ DB_PASSWORD=postgres \
 DB_DRIVER=org.postgresql.Driver \
 DDL_AUTO=update \
 ./gradlew bootRun
+```
+
+## API Documentation
+
+OpenAPI documentation is available at:
+
+```text
+docs/openapi.yaml
 ```
 
 ## API Summary
@@ -131,6 +148,44 @@ GET /api/parent/501/bookings?timeZone=America/New_York
 - A unique database constraint prevents duplicate bookings for the same parent and offering.
 - Multiple parents can book the same offering concurrently because there is no capacity rule in the assignment.
 - Adding sessions is blocked after any booking exists for an offering, so later teacher edits cannot invalidate existing parent locks.
+
+## Database Schema Overview
+
+- `courses`: Stores course/class catalog records. Course names are normalized to avoid duplicate names with different spacing/case.
+- `teachers`: Stores lightweight teacher records.
+- `offerings`: Stores schedulable sections linked to `courses` and `teachers`.
+- `sessions`: Stores meeting times linked to `offerings`; start and end times are persisted as UTC instants.
+- `parent_accounts`: Stores lightweight parent records.
+- `bookings`: Stores parent bookings at offering level. It has a unique constraint on `(parent_id, offering_id)`.
+
+Schema compatibility/migration SQL is included in:
+
+```text
+src/main/resources/schema.sql
+```
+
+## Timezone Handling
+
+- Teachers submit session date-times as local date-times with an IANA timezone, for example `Asia/Kolkata`.
+- The service converts those local date-times to UTC `Instant` values before persistence.
+- Parent and teacher read APIs accept `timeZone` as a query parameter.
+- Response session times are formatted in the requested timezone, for example `America/New_York`.
+
+## Concurrency Handling
+
+- Booking is executed inside a database transaction.
+- The parent row is locked with `PESSIMISTIC_WRITE` before checking existing bookings.
+- This serializes simultaneous booking attempts for the same parent.
+- Conflict detection checks every requested offering session against every already booked session for that parent.
+- Duplicate booking of the same offering is prevented by a database unique constraint.
+
+## Assumptions
+
+- There is no offering capacity limit in the assignment, so multiple parents may book the same offering.
+- Authentication/authorization is outside the assignment scope; `teacherId` and `parentId` are passed directly.
+- Parent bookings are for the full offering, never individual sessions.
+- Sessions cannot be added after an offering has bookings, because that could change the schedule already locked for parents.
+- Course creation is automatic when an offering is created with a new course name.
 
 ## Tests
 
