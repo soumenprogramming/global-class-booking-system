@@ -1,0 +1,314 @@
+{
+  "info": {
+    "name": "Global Class Offering Booking System",
+    "description": "Postman collection for teacher offering/session APIs and parent booking APIs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "offeringId",
+      "value": "1"
+    },
+    {
+      "key": "overlappingOfferingId",
+      "value": "2"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Create Offering",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"teacherId\": 101,\n  \"courseName\": \"Python Coding\",\n  \"title\": \"Saturday Batch\",\n  \"teacherTimeZone\": \"Asia/Kolkata\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/teacher/offerings",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "teacher",
+            "offerings"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. Add Session",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"teacherId\": 101,\n  \"startLocalDateTime\": \"2026-06-06T18:00:00\",\n  \"endLocalDateTime\": \"2026-06-06T19:00:00\",\n  \"timeZone\": \"Asia/Kolkata\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/teacher/offerings/{{offeringId}}/sessions",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "teacher",
+            "offerings",
+            "{{offeringId}}",
+            "sessions"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Get Teacher Offerings",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/teacher/101/offerings?timeZone=Asia/Kolkata",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "teacher",
+            "101",
+            "offerings"
+          ],
+          "query": [
+            {
+              "key": "timeZone",
+              "value": "Asia/Kolkata"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Get Parent Available Offerings - New York Time",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/parent/offerings?timeZone=America/New_York",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "parent",
+            "offerings"
+          ],
+          "query": [
+            {
+              "key": "timeZone",
+              "value": "America/New_York"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5. Book Offering",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"parentId\": 501,\n  \"offeringId\": {{offeringId}}\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/parent/bookings?timeZone=America/New_York",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "parent",
+            "bookings"
+          ],
+          "query": [
+            {
+              "key": "timeZone",
+              "value": "America/New_York"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "6. Get Parent Bookings",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/parent/501/bookings?timeZone=America/New_York",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "parent",
+            "501",
+            "bookings"
+          ],
+          "query": [
+            {
+              "key": "timeZone",
+              "value": "America/New_York"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "7. Create Overlapping Offering",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"teacherId\": 102,\n  \"courseName\": \"Roblox Game Design\",\n  \"title\": \"Weekend Batch\",\n  \"teacherTimeZone\": \"Asia/Kolkata\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/teacher/offerings",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "teacher",
+            "offerings"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "8. Add Overlapping Session",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"teacherId\": 102,\n  \"startLocalDateTime\": \"2026-06-06T18:30:00\",\n  \"endLocalDateTime\": \"2026-06-06T19:30:00\",\n  \"timeZone\": \"Asia/Kolkata\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/teacher/offerings/{{overlappingOfferingId}}/sessions",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "teacher",
+            "offerings",
+            "{{overlappingOfferingId}}",
+            "sessions"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "9. Book Overlapping Offering - Expect 409 Conflict",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"parentId\": 501,\n  \"offeringId\": {{overlappingOfferingId}}\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/parent/bookings?timeZone=America/New_York",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "parent",
+            "bookings"
+          ],
+          "query": [
+            {
+              "key": "timeZone",
+              "value": "America/New_York"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

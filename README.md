@@ -75,6 +75,12 @@ OpenAPI documentation is available at:
 docs/openapi.yaml
 ```
 
+Postman collection is available at:
+
+```text
+docs/postman_collection.json
+```
+
 ## API Summary
 
 All session times are stored as UTC instants. Teachers submit local times with an IANA timezone, such as `Asia/Kolkata`. Parents pass their display timezone with `?timeZone=America/New_York`.
