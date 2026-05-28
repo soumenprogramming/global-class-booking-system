@@ -1,0 +1,315 @@
+openapi: 3.0.3
+info:
+  title: Global Class Offering Booking System API
+  version: 1.0.0
+  description: Backend APIs for teachers to create class offerings and parents to book offerings across timezones.
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/teacher/offerings:
+    post:
+      summary: Create an offering
+      tags: [Teacher]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOfferingRequest'
+            example:
+              teacherId: 101
+              courseName: Python Coding
+              title: Saturday Batch
+              teacherTimeZone: Asia/Kolkata
+      responses:
+        '201':
+          description: Offering created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferingResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /api/teacher/offerings/{offeringId}/sessions:
+    post:
+      summary: Add a session to an offering
+      tags: [Teacher]
+      parameters:
+        - name: offeringId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddSessionRequest'
+            example:
+              teacherId: 101
+              startLocalDateTime: '2026-06-06T18:00:00'
+              endLocalDateTime: '2026-06-06T19:00:00'
+              timeZone: Asia/Kolkata
+      responses:
+        '201':
+          description: Session added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferingResponse'
+        '403':
+          description: Teacher does not own offering
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/teacher/{teacherId}/offerings:
+    get:
+      summary: Get upcoming offerings for a teacher
+      tags: [Teacher]
+      parameters:
+        - name: teacherId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: timeZone
+          in: query
+          required: false
+          schema:
+            type: string
+            default: UTC
+          example: Asia/Kolkata
+      responses:
+        '200':
+          description: Upcoming offerings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OfferingResponse'
+  /api/parent/offerings:
+    get:
+      summary: Get available offerings
+      tags: [Parent]
+      parameters:
+        - name: timeZone
+          in: query
+          required: false
+          schema:
+            type: string
+            default: UTC
+          example: America/New_York
+      responses:
+        '200':
+          description: Available offerings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OfferingResponse'
+  /api/parent/bookings:
+    post:
+      summary: Book an offering
+      tags: [Parent]
+      parameters:
+        - name: timeZone
+          in: query
+          required: false
+          schema:
+            type: string
+            default: UTC
+          example: America/New_York
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookOfferingRequest'
+            example:
+              parentId: 501
+              offeringId: 1
+      responses:
+        '201':
+          description: Offering booked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/parent/{parentId}/bookings:
+    get:
+      summary: Get bookings for a parent
+      tags: [Parent]
+      parameters:
+        - name: parentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: timeZone
+          in: query
+          required: false
+          schema:
+            type: string
+            default: UTC
+          example: America/New_York
+      responses:
+        '200':
+          description: Parent bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookingResponse'
+components:
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Booking or scheduling conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    CreateOfferingRequest:
+      type: object
+      required: [teacherId, courseName, title, teacherTimeZone]
+      properties:
+        teacherId:
+          type: integer
+          format: int64
+        courseName:
+          type: string
+        title:
+          type: string
+        teacherTimeZone:
+          type: string
+          description: IANA timezone ID.
+    AddSessionRequest:
+      type: object
+      required: [teacherId, startLocalDateTime, endLocalDateTime]
+      properties:
+        teacherId:
+          type: integer
+          format: int64
+        startLocalDateTime:
+          type: string
+          format: date-time
+          description: Local date-time in the supplied timezone.
+        endLocalDateTime:
+          type: string
+          format: date-time
+          description: Local date-time in the supplied timezone.
+        timeZone:
+          type: string
+          description: Optional IANA timezone ID. Defaults to the offering teacher timezone.
+    BookOfferingRequest:
+      type: object
+      required: [parentId, offeringId]
+      properties:
+        parentId:
+          type: integer
+          format: int64
+        offeringId:
+          type: integer
+          format: int64
+    OfferingResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        courseId:
+          type: integer
+          format: int64
+        teacherId:
+          type: integer
+          format: int64
+        courseName:
+          type: string
+        title:
+          type: string
+        teacherTimeZone:
+          type: string
+        sessions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionResponse'
+    SessionResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        offeringId:
+          type: integer
+          format: int64
+        teacherId:
+          type: integer
+          format: int64
+        startTime:
+          type: string
+          example: '2026-06-06T08:30:00-04:00'
+        endTime:
+          type: string
+          example: '2026-06-06T09:30:00-04:00'
+        timeZone:
+          type: string
+    BookingResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        parentId:
+          type: integer
+          format: int64
+        bookedAt:
+          type: string
+          format: date-time
+        offering:
+          $ref: '#/components/schemas/OfferingResponse'
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: string
